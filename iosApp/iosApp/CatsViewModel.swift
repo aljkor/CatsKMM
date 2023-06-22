@@ -34,6 +34,10 @@ class CatsViewModel: ObservableObject {
                 return
             }
             self.breeds = list
+            
+            /*print("list length")
+            print(list.count)
+            print(Date().timeIntervalSinceReferenceDate)*/
         }
     }
 }

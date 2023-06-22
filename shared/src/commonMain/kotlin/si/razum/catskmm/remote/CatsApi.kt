@@ -16,16 +16,19 @@ import org.koin.core.component.KoinComponent
 import si.razum.catskmm.remote.data.BreedsListItem
 import si.razum.catskmm.remote.data.ImageListItem
 import com.kuuurt.paging.multiplatform.helpers.dispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 
 fun <T> Flow<T>.wrap(): CommonFlow<T> = CommonFlow(this)
 
 class CommonFlow<T>(private val origin: Flow<T>) : Flow<T> by origin {
     fun watch(block: (T) -> Unit): Closeable {
         val job = Job()
-        onEach { block(it) }.launchIn(CoroutineScope(job + dispatcher()))
+        onEach { block(it) }.launchIn(CoroutineScope(job + Dispatchers.Main))//dispatcher()))
 
         return object : Closeable {
             override fun close() {
+                println("evo mene closeam commonflow")
                 job.cancel()
             }
         }
@@ -40,6 +43,10 @@ class CatsApi(
 
     fun getAllBreedsAsFlow() = flow {
         val result = client.get("$baseUrl/breeds").body<List<BreedsListItem>>()
+        emit(result.drop(10))
+        delay(3000)
+        emit(result.drop(3))
+        delay(3000)
         emit(result)
     }.wrap()
 
