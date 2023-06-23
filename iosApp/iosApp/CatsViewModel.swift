@@ -9,6 +9,7 @@
 import Foundation
 import shared
 import Combine
+import KMPNativeCoroutinesAsync
 
 @MainActor
 class CatsViewModel: ObservableObject {

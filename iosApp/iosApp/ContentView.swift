@@ -6,17 +6,28 @@ struct ContentView: View {
     let greet = Greeting().greet()
     let catsRepository: CatsRepository
     
+    @State private var searchText = ""
+    
     @ObservedObject var viewModel: CatsViewModel
     
     init(repository: CatsRepository = CatsRepository()) {
-        self.catsRepository = repository
-        self.viewModel = CatsViewModel(repository: catsRepository)
+        catsRepository = repository
+        viewModel = CatsViewModel(repository: catsRepository)
+        viewModel.startObservingCatBreedsFlow()
+    }
+    
+    var searchResults: [BreedsListItem] {
+        if searchText.isEmpty {
+            return viewModel.breeds
+        } else {
+            return viewModel.breeds.filter {$0.name.lowercased().contains(searchText.lowercased())}
+        }
     }
     
     var body: some View {
-        NavigationView {
-            List(viewModel.breeds, id: \.id) { breed in
-                NavigationLink(destination: BreedDetails(breed: breed, catsRepository: catsRepository)){
+        NavigationStack {
+            List(searchResults, id: \.id) { breed in
+                NavigationLink(value: breed){
                     HStack {
                         AsyncImage(url: URL(string: breed.image?.url ?? "")){ image in
                             image
@@ -38,11 +49,11 @@ struct ContentView: View {
                 }
                 .navigationBarTitle(Text("Cat breeds"))
                 .navigationBarTitleDisplayMode(.large)
-                
-            }.task {
-                //await viewModel.startObservingCatBreeds()
-                viewModel.startObservingCatBreedsFlow() //flow
             }.environment(\.defaultMinListRowHeight, 100)
+            .searchable(text: $searchText)
+            .navigationDestination(for: BreedsListItem.self) { breed in
+                BreedDetails(breed: breed, catsRepository: catsRepository)
+            }
         }
     }
 }

@@ -28,7 +28,7 @@ class CommonFlow<T>(private val origin: Flow<T>) : Flow<T> by origin {
 
         return object : Closeable {
             override fun close() {
-                println("evo mene closeam commonflow")
+                print("flow canceled commonflow")
                 job.cancel()
             }
         }
@@ -44,11 +44,26 @@ class CatsApi(
     fun getAllBreedsAsFlow() = flow {
         val result = client.get("$baseUrl/breeds").body<List<BreedsListItem>>()
         emit(result.drop(10))
+        print("first flow")
         delay(3000)
+        print("second flow")
         emit(result.drop(3))
         delay(3000)
+        print("third flow")
         emit(result)
     }.wrap()
+
+    fun letsTryAgainAsFlow() = flow {
+        val result = client.get("$baseUrl/breeds").body<List<BreedsListItem>>()
+        emit(result.drop(10))
+        print("first flow")
+        delay(3000)
+        print("second flow")
+        emit(result.drop(3))
+        delay(3000)
+        print("third flow")
+        emit(result)
+    }
 
 
     suspend fun getBreedDetails(breedId: String) = client.get{
